@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 // شاشات إضافية لكل دور
 import 'qa_screen.dart';
-import 'chat_screen.dart';
+import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'doctor_dashboard_screen.dart';
 
@@ -27,14 +27,14 @@ class _MainScreenState extends State<MainScreen> {
     final patientScreens = [
       HomeScreen(),
       QAScreen(),
-      ChatScreen(),
+      MessagesScreen(),
       ProfileScreen(),
     ];
 
     final doctorScreens = [
       HomeScreen(),
       DoctorDashboardScreen(),
-      ChatScreen(),
+      MessagesScreen(),
       ProfileScreen(),
     ];
 

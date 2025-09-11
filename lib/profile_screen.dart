@@ -198,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       padding: EdgeInsets.all(screenWidth * 0.04),
       child: Column(
         textDirection: TextDirection.rtl,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Personal Information Card
           Container(
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             child: Column(
               textDirection: TextDirection.rtl,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   'المعلومات الشخصية',
@@ -266,14 +266,17 @@ class _ProfileScreenState extends State<ProfileScreen>
               color: Color(0xFF2E7D7B),
             ),
             textAlign: TextAlign.end,
+            textDirection: TextDirection.ltr,
           ),
           SizedBox(height: screenWidth * 0.02),
           Text(
             'أنت مشترك في ١ مواضيع',
+
             style: TextStyle(
               fontSize: screenWidth * 0.035,
               color: Colors.grey[600],
             ),
+            textAlign: TextAlign.end,
           ),
           SizedBox(height: screenWidth * 0.04),
           Container(
