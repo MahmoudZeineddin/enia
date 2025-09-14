@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       locale: const Locale('ar', ''),
       supportedLocales: const [Locale('ar', '')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: MainScreen(role: "patient"),
+      home: MainScreen(role: "doctor"), // patient
     );
   }
 }
