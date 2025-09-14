@@ -415,34 +415,42 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen>
 
   Widget _buildQuestionsTab(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final TextEditingController _replyController = TextEditingController();
 
-    // بيانات أسئلة تجريبية (لاحقًا من Firebase)
+    // بيانات تجريبية
     final List<Map<String, dynamic>> questions = [
       {
         'patientName': 'خالد',
         'question': 'ما هي أعراض القلق النفسي؟',
         'date': '12/09/2025 - 10:30م',
-        'answers': [
-          {
-            'doctorName': 'د. أحمد',
-            'text': 'الأرق',
-            'date': '12/09/2025 - 10:45م',
-          },
-          {
-            'doctorName': 'د. أحمد',
-            'text': 'التوتر المستمر',
-            'date': '12/09/2025 - 10:50م',
-          },
-        ],
+        'answer': {
+          'doctorName': 'د. أحمد',
+          'text': 'الأرق',
+          'date': '12/09/2025 - 10:45م',
+          'edited': false,
+        },
       },
       {
         'patientName': 'محمود',
         'question': 'كيف أتعامل مع قلة النوم؟',
         'date': '12/09/2025 - 11:00م',
-        'answers': [],
+        'answer': null,
       },
     ];
+
+    List<TextEditingController> controllers = List.generate(questions.length, (
+      index,
+    ) {
+      return TextEditingController(
+        text: questions[index]['answer'] != null
+            ? questions[index]['answer']['text']
+            : '',
+      );
+    });
+
+    List<bool> isEditingList = List.generate(
+      questions.length,
+      (index) => false,
+    );
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -450,330 +458,199 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen>
       itemBuilder: (context, index) {
         final q = questions[index];
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // السؤال (مريض)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                textDirection: TextDirection.rtl,
-                children: [
-                  CircleAvatar(
-                    radius: screenWidth * 0.05,
-                    backgroundColor: Colors.teal,
-                    child: const Icon(Icons.person, color: Colors.white),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          q['patientName'],
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.04,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            q['question'],
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.043,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          q['date'],
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.032,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool hasAnswer = q['answer'] != null;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 12),
-
-              // الإجابات (أطباء)
-              if (q['answers'].isNotEmpty)
-                Column(
-                  children: q['answers'].map<Widget>((ans) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        textDirection: TextDirection.ltr, // طبيب يسار
-                        children: [
-                          CircleAvatar(
-                            radius: screenWidth * 0.05,
-                            backgroundColor: Colors.blue,
-                            child: const Icon(
-                              Icons.medical_services,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ans['doctorName'],
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    ans['text'],
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.04,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  ans['date'],
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.032,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 48),
-                  child: Text(
-                    'لا توجد إجابات بعد.',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // السؤال
+                  Text(
+                    "${q['patientName']}:\n${q['question']}",
                     style: TextStyle(
                       fontSize: screenWidth * 0.04,
-                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
 
-              const SizedBox(height: 12),
-
-              // إدخال الرد (لوحة مفاتيح + زر إرسال)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _replyController,
-                      decoration: InputDecoration(
-                        hintText: "اكتب ردك هنا...",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // الإجابة أو حقل الكتابة
+                  hasAnswer || isEditingList[index]
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: isEditingList[index]
+                                  ? Column(
+                                      children: [
+                                        TextField(
+                                          controller: controllers[index],
+                                          maxLines: null,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: "عدّل الإجابة هنا...",
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(Icons.send),
+                                            label: const Text("حفظ"),
+                                            onPressed: () {
+                                              setState(() {
+                                                q['answer']['text'] =
+                                                    controllers[index].text;
+                                                q['answer']['edited'] = true;
+                                                isEditingList[index] = false;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "دكتور: ${q['answer']['doctorName']}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(q['answer']['text']),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "وقت الإجابة: ${q['answer']['date']}" +
+                                              (q['answer']['edited'] == true
+                                                  ? " (تم التعديل)"
+                                                  : ""),
+                                          style: TextStyle(
+                                            fontSize: screenWidth * 0.03,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                            const SizedBox(height: 8),
+                            // قائمة تعديل / حذف فقط عند عرض الإجابة
+                            if (!isEditingList[index])
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  PopupMenuButton<String>(
+                                    onSelected: (value) {
+                                      if (value == 'edit') {
+                                        setState(() {
+                                          isEditingList[index] = true;
+                                        });
+                                      } else if (value == 'delete') {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text('تأكيد الحذف'),
+                                            content: const Text(
+                                              'هل تريد حذف الإجابة؟',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(ctx).pop();
+                                                },
+                                                child: const Text('إلغاء'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    q['answer'] = null;
+                                                    isEditingList[index] =
+                                                        false;
+                                                    controllers[index].clear();
+                                                  });
+                                                  Navigator.of(ctx).pop();
+                                                },
+                                                child: const Text('حذف'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('تعديل'),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('حذف'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: controllers[index],
+                                decoration: InputDecoration(
+                                  hintText: "اكتب الرد هنا...",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.send, color: Colors.teal),
+                              onPressed: () {
+                                if (controllers[index].text.trim().isNotEmpty) {
+                                  setState(() {
+                                    q['answer'] = {
+                                      'doctorName': 'د. أحمد',
+                                      'text': controllers[index].text,
+                                      'date': 'الآن',
+                                      'edited': false,
+                                    };
+                                    isEditingList[index] = false;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: Colors.teal),
-                    onPressed: () {
-                      if (_replyController.text.trim().isNotEmpty) {
-                        // هنا يتم إضافة الرد للطبيب
-                        // TODO: ربط مع Firebase
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("تم إرسال الرد")),
-                        );
-                        _replyController.clear();
-                      }
-                    },
-                  ),
                 ],
               ),
-
-              // زر الحذف
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () {
-                    // TODO: حذف السؤال من Firebase
-                  },
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text(
-                    "حذف",
-                    style: TextStyle(color: Colors.red, fontSize: 14),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
-    );
-  }
-
-  Widget _buildActiveClientsSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'العملاء النشطين مؤخراً',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  _tabController!.animateTo(2);
-                },
-                child: Text('عرض الكل'),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: activeClients.take(3).length,
-            itemBuilder: (context, index) {
-              return _buildClientListItem(activeClients[index], context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClientListItem(
-    Map<String, dynamic> client,
-    BuildContext context,
-  ) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: InkWell(
-        onTap: () {
-          // _navigateToClientProfile(client, context);
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.teal,
-                child: Text(
-                  client['name'][0],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      client['name'],
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      client['lastActive'],
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: client['status'] == 'نشط'
-                      ? Colors.green
-                      : Colors.orange,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  client['status'],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -1054,116 +931,151 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen>
   }
 
   Widget _buildClientsTab(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
+    final screenWidth = MediaQuery.of(context).size.width;
+    TextEditingController searchController = TextEditingController();
+    List<Map<String, dynamic>> filteredClients = List.from(activeClients);
 
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // نستخدم StatefulBuilder للسماح بتحديث الواجهة عند البحث
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isTablet = constraints.maxWidth > 600;
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'قائمة العملاء',
-                    style: TextStyle(
-                      fontSize: isTablet ? 24 : 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'قائمة العملاء',
+                        style: TextStyle(
+                          fontSize: isTablet ? 24 : 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal,
+                        ),
+                      ),
+                      Text(
+                        '${filteredClients.length} عميل',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+
+                  // البحث والتصفية
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            decoration: InputDecoration(
+                              hintText: 'البحث عن عميل...',
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                final query = value.toLowerCase();
+                                filteredClients = activeClients.where((client) {
+                                  return client['name'].toLowerCase().contains(
+                                        query,
+                                      ) ||
+                                      client['email'].toLowerCase().contains(
+                                        query,
+                                      ) ||
+                                      client['phone'].toLowerCase().contains(
+                                        query,
+                                      ) ||
+                                      client['lastQuestion']
+                                          .toLowerCase()
+                                          .contains(query);
+                                }).toList();
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            // يمكن إضافة خيارات تصفية إضافية هنا
+                          },
+                          icon: Icon(Icons.filter_list, color: Colors.teal),
+                          label: Text(
+                            'تصفية',
+                            style: TextStyle(color: Colors.teal),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.teal),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    '${activeClients.length} عميل',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+
+                  SizedBox(height: 16),
+
+                  // قائمة العملاء بعد التصفية
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: filteredClients.length,
+                    itemBuilder: (context, index) {
+                      final client = filteredClients[index];
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ClientDetailsScreen(client: client),
+                              ),
+                            );
+                          },
+                          child: _buildClientCard(client, context),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
-              SizedBox(height: 16),
-
-              // البحث والتصفية
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'البحث عن عميل...',
-                          prefixIcon: Icon(Icons.search, color: Colors.grey),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: Icon(Icons.filter_list, color: Colors.teal),
-                      label: Text(
-                        'تصفية',
-                        style: TextStyle(color: Colors.teal),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.teal),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 16),
-
-              // قائمة العملاء
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: activeClients.length,
-                itemBuilder: (context, index) {
-                  final client = activeClients[index];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: InkWell(
-                      onTap: () {
-                        // افتح صفحة تفاصيل العميل
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ClientDetailsScreen(client: client),
-                          ),
-                        );
-                      },
-                      child: _buildClientCard(client, context),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

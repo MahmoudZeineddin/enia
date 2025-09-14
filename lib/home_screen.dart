@@ -6,7 +6,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // بيانات المواضيع (سيتم جلبها من Firebase لاحقاً)
   final List<Topic> topics = [
     Topic(
       id: '1',

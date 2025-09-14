@@ -47,7 +47,6 @@ class _QAScreenState extends State<QAScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Directionality(
-      // ✅ لضبط اتجاه الشاشة للعربي
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Color(0xFFF5F7FA),
@@ -135,18 +134,20 @@ class _QAScreenState extends State<QAScreen> {
                       child: ElevatedButton(
                         onPressed: isButtonEnabled
                             ? () {
+                                final newQuestion = {
+                                  'id': DateTime.now().toString(),
+                                  'userName': 'أنت',
+                                  'timeAgo': 'الآن',
+                                  'question': _questionController.text,
+                                  'isAnswered': false,
+                                };
+
                                 setState(() {
-                                  questions.insert(0, {
-                                    'id': DateTime.now().toString(),
-                                    'userName': 'أنت',
-                                    'timeAgo': 'الآن',
-                                    'question': _questionController.text,
-                                    'isAnswered': false,
-                                  });
+                                  questions.insert(0, newQuestion);
                                   _questionController.clear();
                                 });
                               }
-                            : null, // ❌ الزر معطل لو ما كتب المستخدم
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isButtonEnabled
                               ? Color(0xFF2E7D7B)
