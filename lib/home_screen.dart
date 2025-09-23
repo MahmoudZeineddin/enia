@@ -6,6 +6,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isSearching = false; // للتحكم في إظهار حقل البحث
+  String searchQuery = ""; // النص المدخل للبحث
+
   final List<Topic> topics = [
     Topic(
       id: '1',
@@ -34,6 +37,15 @@ class _HomeScreenState extends State<HomeScreen> {
       views: 2145,
       isSubscribed: true,
     ),
+    Topic(
+      id: '4',
+      title: 'التمارين الرياضية',
+      description: 'روتينات وتمارين لتحسين اللياقة البدنية والصحة العامة',
+      icon: Icons.fitness_center,
+      subscribers: 276,
+      views: 1340,
+      isSubscribed: false,
+    ),
   ];
 
   @override
@@ -41,6 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
+
+    // فلترة المواضيع حسب النص
+    final filteredTopics = topics.where((topic) {
+      return topic.title.contains(searchQuery) ||
+          topic.description.contains(searchQuery);
+    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -60,7 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(height: screenHeight * 0.03),
                 _buildSectionHeader(screenWidth, isTablet),
                 SizedBox(height: screenHeight * 0.02),
-                _buildTopicsList(screenWidth, screenHeight, isTablet),
+                _buildTopicsList(
+                  filteredTopics,
+                  screenWidth,
+                  screenHeight,
+                  isTablet,
+                ),
               ],
             ),
           ),
@@ -85,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             textDirection: TextDirection.rtl,
           ),
-
           Container(
             padding: EdgeInsets.all(isTablet ? 12 : screenWidth * 0.025),
             decoration: BoxDecoration(
@@ -99,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-
             child: Icon(
               Icons.notifications_outlined,
               color: Color(0xFF4A9B8E),
@@ -163,27 +184,51 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSectionHeader(double screenWidth, bool isTablet) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'المواضيع المتاحة',
-          style: TextStyle(
-            fontSize: isTablet ? 22 : screenWidth * 0.05,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+        isSearching
+            ? Expanded(
+                child: TextField(
+                  autofocus: true,
+                  textAlign: TextAlign.right,
+                  decoration: InputDecoration(
+                    hintText: "ابحث عن موضوع...",
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                ),
+              )
+            : Text(
+                'المواضيع المتاحة',
+                style: TextStyle(
+                  fontSize: isTablet ? 22 : screenWidth * 0.05,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+        IconButton(
+          icon: Icon(
+            isSearching ? Icons.close : Icons.search,
+            color: Color(0xFF4A9B8E),
+            size: isTablet ? 28 : screenWidth * 0.06,
           ),
-        ),
-        SizedBox(width: screenWidth * 0.56),
-        Icon(
-          Icons.search,
-          color: Color(0xFF4A9B8E),
-          size: isTablet ? 28 : screenWidth * 0.06,
+          onPressed: () {
+            setState(() {
+              isSearching = !isSearching;
+              if (!isSearching) searchQuery = "";
+            });
+          },
         ),
       ],
     );
   }
 
   Widget _buildTopicsList(
+    List<Topic> topics,
     double screenWidth,
     double screenHeight,
     bool isTablet,
@@ -253,25 +298,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             textAlign: TextAlign.right,
                           ),
                         ),
-                        if (topic.isSubscribed)
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.02,
-                              vertical: screenHeight * 0.005,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Color(0xFF4A9B8E),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'مشترك',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: isTablet ? 12 : screenWidth * 0.025,
-                                fontWeight: FontWeight.w600,
-                              ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.02,
+                            vertical: screenHeight * 0.005,
+                          ),
+                          decoration: BoxDecoration(
+                            color: topic.isSubscribed
+                                ? Color(0xFF4A9B8E)
+                                : Colors.grey,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            topic.isSubscribed ? 'مشترك' : 'غير مشترك',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isTablet ? 12 : screenWidth * 0.025,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ],
@@ -301,7 +347,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  _navigateToTopicDetails(topic);
+                  if (topic.isSubscribed) {
+                    _navigateToTopicDetails(topic);
+                  } else {
+                    _subscribeToTopic(topic);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF4A9B8E),
@@ -315,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'تفاصيل',
+                  topic.isSubscribed ? 'تفاصيل' : 'اشترك',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: isTablet ? 16 : screenWidth * 0.035,
@@ -349,6 +399,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  void _subscribeToTopic(Topic topic) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تم الاشتراك في: ${topic.title}'),
+        backgroundColor: Color(0xFF4A9B8E),
+      ),
+    );
+  }
 }
 
 // Topic Model Class
@@ -359,7 +418,7 @@ class Topic {
   final IconData icon;
   final int subscribers;
   final int views;
-  final bool isSubscribed; // بدل isNew
+  final bool isSubscribed;
 
   Topic({
     required this.id,

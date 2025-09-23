@@ -18,52 +18,72 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  List<Widget> _screens = [];
+  List<BottomNavigationBarItem> _navItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeScreens();
+  }
+
+  void _initializeScreens() {
+    try {
+      // القوائم الخاصة بكل دور
+      final patientScreens = [
+        HomeScreen(),
+        QAScreen(),
+        MessagesScreen(),
+        ProfileScreen(),
+      ];
+
+      final doctorScreens = [
+        HomeScreen(),
+        DoctorDashboardScreen(),
+        MessagesScreen(),
+        ProfileScreen(),
+      ];
+
+      final patientNavItems = [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.question_answer),
+          label: "الأسئلة",
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.chat), label: "المحادثات"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "حسابي"),
+      ];
+
+      final doctorNavItems = [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard),
+          label: "لوحة التحكم",
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.chat), label: "المحادثات"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "حسابي"),
+      ];
+
+      setState(() {
+        _screens = widget.role == "doctor" ? doctorScreens : patientScreens;
+        _navItems = widget.role == "doctor" ? doctorNavItems : patientNavItems;
+      });
+    } catch (e) {
+      print('Error initializing screens: $e');
+      // يمكن إضافة معالجة إضافية للأخطاء هنا
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // القوائم الخاصة بكل دور
-    final patientScreens = [
-      HomeScreen(),
-      QAScreen(),
-      MessagesScreen(),
-      ProfileScreen(),
-    ];
-
-    final doctorScreens = [
-      HomeScreen(),
-      DoctorDashboardScreen(),
-      MessagesScreen(),
-      ProfileScreen(),
-    ];
-
-    final patientNavItems = [
-      BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.question_answer),
-        label: "الأسئلة",
-      ),
-      BottomNavigationBarItem(icon: Icon(Icons.chat), label: "المحادثات"),
-      BottomNavigationBarItem(icon: Icon(Icons.person), label: "حسابي"),
-    ];
-
-    final doctorNavItems = [
-      BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.dashboard),
-        label: "لوحة التحكم",
-      ),
-      BottomNavigationBarItem(icon: Icon(Icons.chat), label: "المحادثات"),
-      BottomNavigationBarItem(icon: Icon(Icons.person), label: "حسابي"),
-    ];
-
-    // اختيار المجموعة حسب الدور
-    final screens = widget.role == "doctor" ? doctorScreens : patientScreens;
-    final navItems = widget.role == "doctor" ? doctorNavItems : patientNavItems;
+    if (_screens.isEmpty || _navItems.isEmpty) {
+      return Scaffold(body: Center(child: Text('جاري تحميل التطبيق...')));
+    }
 
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         backgroundColor: AppColors.background,
@@ -79,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
           fontSize: screenWidth * 0.04,
           fontWeight: FontWeight.normal,
         ),
-        items: navItems,
+        items: _navItems,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
